@@ -2,7 +2,7 @@
   "name": "rein",
   "displayName": "rein - guardrails for AI-written code",
   "description": "Deterministic, no-LLM guardrails: secrets, unsafe code, lint, and import-resolution findings from the rein engine, shown inline.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "sametatas",
   "license": "Apache-2.0",
   "engines": {
@@ -20,6 +20,10 @@
     "python"
   ],
   "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#0f172a",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/SametAtas/rein-vscode.git"
