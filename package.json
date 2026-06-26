@@ -39,6 +39,18 @@
         "title": "rein: Review Current File"
       },
       {
+        "command": "rein.reviewWorkspace",
+        "title": "rein: Review Workspace"
+      },
+      {
+        "command": "rein.reviewStaged",
+        "title": "rein: Review Staged Changes"
+      },
+      {
+        "command": "rein.checkCommitMessage",
+        "title": "rein: Check Commit Message"
+      },
+      {
         "command": "rein.showOutput",
         "title": "rein: Show Log"
       }
