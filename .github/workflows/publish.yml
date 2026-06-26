@@ -27,6 +27,10 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: npx vsce publish --no-dependencies --packagePath *.vsix
+      - name: Ensure Open VSX namespace exists
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+        run: npx ovsx create-namespace sametatas --pat "$OVSX_PAT" || true
       - name: Publish to Open VSX
         env:
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
