@@ -5,11 +5,15 @@
 [![CI](https://github.com/SametAtas/rein-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/SametAtas/rein-vscode/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-Runs the [rein](https://rein.software) engine on your Python files and shows its
-findings inline: leaked secrets, unsafe-code patterns, clean-code lint, and
-imports that do not resolve. rein is deterministic and makes no network or LLM
-calls. This extension is a thin client: it shells out to the local `rein`
-binary and renders what it reports. No detection logic lives in the extension.
+You write Python with Copilot, Cursor, and other AI assistants. rein checks what
+they produce - leaked secrets, unsafe-code patterns, and imports that do not
+resolve (a common AI hallucination) - and shows it inline, before you commit or
+run. It is deterministic and makes no network or LLM calls: a reproducible gate,
+not another model second-guessing the first.
+
+This extension is a thin client over the [rein](https://rein.software) engine. It
+shells out to the local `rein` binary and renders exactly what `rein` reports on
+the command line or in CI. No detection logic lives in the extension.
 
 ![rein findings shown inline in VS Code](https://raw.githubusercontent.com/SametAtas/rein-vscode/main/images/diagnostics.png)
 
@@ -27,13 +31,15 @@ blocks the editor.
 
 ## What it does
 
-- Reviews the active Python file on open and on save (configurable), and on
-  demand via `rein: Review Current File`.
-- Maps each finding to a diagnostic in the Problems panel and as an inline
-  marker: CRITICAL and HIGH to Error, MEDIUM to Warning, LOW to Information,
-  INFO to Hint. A status-bar item shows the active file's count.
-- Reviews a whole workspace, the staged git diff, or the Source Control commit
-  message, on demand.
+- Reviews Python as you work - on open and on save (configurable), and on
+  demand via `rein: Review Current File` - so AI-written code is checked before
+  it lands in a commit or runs.
+- Flags leaked secrets, unsafe-code patterns, lint issues, and unresolved or
+  hallucinated imports, mapped to editor diagnostics by severity: CRITICAL and
+  HIGH to Error, MEDIUM to Warning, LOW to Information, INFO to Hint. A
+  status-bar item shows the active file's count.
+- Gates the staged git diff and the Source Control commit message on demand, so
+  generated code is checked before it ships.
 - Fails open: a missing, slow, or failing engine yields no diagnostics rather
   than an error.
 

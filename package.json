@@ -1,8 +1,8 @@
 {
   "name": "rein",
   "displayName": "rein - guardrails for AI-written code",
-  "description": "Deterministic, no-LLM guardrails: secrets, unsafe code, lint, and import-resolution findings from the rein engine, shown inline.",
-  "version": "0.0.2",
+  "description": "Checks the code your AI assistant writes: leaked secrets, unsafe calls, and imports that do not resolve, shown inline before you commit or run. Deterministic, no LLM. Powered by the rein engine.",
+  "version": "0.0.3",
   "publisher": "sametatas",
   "license": "Apache-2.0",
   "engines": {
@@ -13,11 +13,15 @@
   ],
   "keywords": [
     "rein",
-    "guardrails",
-    "security",
+    "copilot",
+    "cursor",
+    "ai",
+    "agent",
     "secrets",
-    "lint",
-    "python"
+    "security",
+    "hallucinated imports",
+    "python",
+    "guardrails"
   ],
   "icon": "icon.png",
   "galleryBanner": {

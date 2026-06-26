@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3
+
+- Positioning: the listing now leads with checking AI-written code (catching
+  leaked secrets, unsafe calls, and hallucinated imports before it runs) rather
+  than generic linting. Copy, keywords, and README only; no behavior change.
+
 ## 0.0.2
 
 - Marketplace listing: badges, a screenshot, command and settings tables, and a
