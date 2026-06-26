@@ -1,0 +1,6 @@
+rein for VS Code
+Copyright the rein authors.
+
+This product is licensed under the Apache License, Version 2.0. It invokes the
+separately-installed rein engine (https://rein.software) at runtime and does not
+bundle or redistribute it.

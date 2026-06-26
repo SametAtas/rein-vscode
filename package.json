@@ -1,0 +1,130 @@
+{
+  "name": "rein",
+  "displayName": "rein - guardrails for AI-written code",
+  "description": "Deterministic, no-LLM guardrails: secrets, unsafe code, lint, and import-resolution findings from the rein engine, shown inline.",
+  "version": "0.0.1",
+  "publisher": "sametatas",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "keywords": [
+    "rein",
+    "guardrails",
+    "security",
+    "secrets",
+    "lint",
+    "python"
+  ],
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SametAtas/rein-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SametAtas/rein-vscode/issues"
+  },
+  "homepage": "https://rein.software",
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "rein.reviewFile",
+        "title": "rein: Review Current File"
+      },
+      {
+        "command": "rein.showOutput",
+        "title": "rein: Show Log"
+      }
+    ],
+    "configuration": {
+      "title": "rein",
+      "properties": {
+        "rein.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable rein diagnostics."
+        },
+        "rein.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the rein executable. Empty means search PATH."
+        },
+        "rein.run": {
+          "type": "string",
+          "enum": [
+            "onSaveAndOpen",
+            "onSave",
+            "manual"
+          ],
+          "default": "onSaveAndOpen",
+          "description": "When to review a file automatically."
+        },
+        "rein.explain": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include remediation guidance from rein (--explain)."
+        },
+        "rein.severityThreshold": {
+          "type": "string",
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "info",
+          "description": "Hide findings below this severity."
+        },
+        "rein.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments passed to rein review (e.g. [\"--bandit\"])."
+        },
+        "rein.baseline": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a rein baseline file (--baseline)."
+        },
+        "rein.configPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a .rein.toml config file (--config)."
+        },
+        "rein.maxFileSizeKB": {
+          "type": "number",
+          "default": 1024,
+          "description": "Skip files larger than this size in kilobytes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "test": "tsc -p . && node --test out/test/*.test.js",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package --no-dependencies",
+    "publish:vsce": "vsce publish --no-dependencies",
+    "publish:ovsx": "ovsx publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.23.0",
+    "ovsx": "^0.9.0",
+    "typescript": "^5.4.0"
+  }
+}
