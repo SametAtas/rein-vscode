@@ -2,11 +2,11 @@
   "name": "rein",
   "displayName": "rein - guardrails for AI-written code",
   "description": "Checks the code your AI assistant writes: leaked secrets, unsafe calls, and imports that do not resolve, shown inline before you commit or run. Deterministic, no LLM. Powered by the rein engine.",
-  "version": "0.0.3",
+  "version": "0.2.0",
   "publisher": "sametatas",
   "license": "Apache-2.0",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "Linters"
@@ -41,6 +41,49 @@
     "onLanguage:python"
   ],
   "contributes": {
+    "languageModelTools": [
+      {
+        "name": "rein_review",
+        "displayName": "rein: review code",
+        "modelDescription": "After writing or editing Python code, run rein to check it for leaked secrets, unsafe calls, and unresolved or hallucinated imports before finalizing. Pass the code as `code` and, when known, the file path as `filename`. Returns the findings to fix.",
+        "userDescription": "Run rein to check code for leaked secrets, unsafe calls, and unresolved imports.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "rein",
+        "tags": [
+          "rein"
+        ],
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "The source code to review."
+            },
+            "filename": {
+              "type": "string",
+              "description": "Path or name for the code, used in findings and path-based rules. Defaults to snippet.py."
+            }
+          },
+          "required": [
+            "code"
+          ]
+        }
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "rein.review",
+        "name": "rein",
+        "fullName": "rein",
+        "description": "Review code with the rein engine: leaked secrets, unsafe calls, and imports that do not resolve.",
+        "commands": [
+          {
+            "name": "review",
+            "description": "Review the pasted code block, editor selection, or current file."
+          }
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "rein.reviewFile",
@@ -141,7 +184,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.95.0",
     "@vscode/vsce": "^3.0.0",
     "esbuild": "^0.23.0",
     "ovsx": "^0.9.0",

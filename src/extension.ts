@@ -3,6 +3,9 @@ import * as path from "node:path";
 import { findRein, run } from "./runner.js";
 import { parseFindings } from "./parse.js";
 import { buildDiagnostics, groupByPath } from "./diagnostics.js";
+import { selectReviewCode, formatFindings } from "./chat.js";
+import { formatToolSummary } from "./tool.js";
+import type { ReinToolInput } from "./tool.js";
 import type { ThresholdName } from "./severity.js";
 
 let output: vscode.OutputChannel;
@@ -44,6 +47,23 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidCloseTextDocument((doc) => collection.delete(doc.uri)),
     vscode.window.onDidChangeActiveTextEditor(() => updateStatus()),
   );
+
+  // B1: the @rein chat participant. Guarded so a host without the chat API
+  // (or a registration failure) never breaks the M1-M4 diagnostics.
+  try {
+    const participant = vscode.chat.createChatParticipant("rein.review", handleChat);
+    context.subscriptions.push(participant);
+  } catch (err) {
+    output.appendLine(`rein: chat participant unavailable: ${String(err)}`);
+  }
+
+  // B2: the rein_review language model tool the agent calls on code it writes.
+  // Guarded the same way so a host without the lm tool API cannot break M1-M4.
+  try {
+    context.subscriptions.push(vscode.lm.registerTool("rein_review", reinTool));
+  } catch (err) {
+    output.appendLine(`rein: language model tool unavailable: ${String(err)}`);
+  }
 
   const active = vscode.window.activeTextEditor?.document;
   if (active && runMode() === "onSaveAndOpen") {
@@ -243,6 +263,84 @@ function gitInputBoxValue(): string | null {
   const ext = vscode.extensions.getExtension<GitExtensionExports>("vscode.git");
   const repo = ext?.exports?.getAPI(1)?.repositories?.[0];
   return repo ? repo.inputBox.value : null;
+}
+
+// --- B1: @rein chat participant (review code in the AI conversation) ---
+
+async function handleChat(
+  request: vscode.ChatRequest,
+  _context: vscode.ChatContext,
+  stream: vscode.ChatResponseStream,
+  _token: vscode.CancellationToken,
+): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  const selection =
+    editor && !editor.selection.isEmpty ? editor.document.getText(editor.selection) : null;
+  const document = editor ? editor.document.getText() : null;
+  const picked = selectReviewCode(request.prompt, selection, document);
+  if (picked === null) {
+    stream.markdown(
+      "rein: select some code, open a file, or paste a fenced code block, then ask `@rein review`.",
+    );
+    return;
+  }
+  const bin = await resolveRein(true);
+  if (bin === null) {
+    stream.markdown("rein engine not found. Install it with `pipx install rein-engine`.");
+    return;
+  }
+  const filename =
+    picked.source === "prompt" || !editor ? "snippet.py" : editor.document.uri.fsPath;
+  const cwd =
+    (editor ? vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath : undefined) ??
+    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const res = await run(
+    bin,
+    ["review", "--stdin", "--filename", filename, "--format", "json", ...reviewFlags(config())],
+    { cwd, stdin: picked.code },
+  );
+  if (!ok(res, "chat review")) {
+    stream.markdown("rein: the review could not be completed. Run `rein: Show Log` for details.");
+    return;
+  }
+  stream.markdown(formatFindings(parseFindings(res.stdout)));
+}
+
+// --- B2: rein_review language model tool (the agent checks its own code) ---
+
+const reinTool: vscode.LanguageModelTool<ReinToolInput> = {
+  async invoke(
+    options: vscode.LanguageModelToolInvocationOptions<ReinToolInput>,
+    _token: vscode.CancellationToken,
+  ): Promise<vscode.LanguageModelToolResult> {
+    const code = typeof options.input?.code === "string" ? options.input.code : "";
+    if (code.trim() === "") {
+      return toolResult("rein: no code was provided to review.");
+    }
+    const bin = await resolveRein(true);
+    if (bin === null) {
+      return toolResult("rein engine not found. Install it with: pipx install rein-engine");
+    }
+    const raw = options.input.filename;
+    const filename = typeof raw === "string" && raw.trim() !== "" ? raw : "snippet.py";
+    const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const res = await run(
+      bin,
+      ["review", "--stdin", "--filename", filename, "--format", "json", ...reviewFlags(config())],
+      { cwd, stdin: code },
+    );
+    if (!ok(res, "tool review")) {
+      return toolResult("rein: the review could not be completed (engine error or timeout).");
+    }
+    return toolResult(formatToolSummary(parseFindings(res.stdout)));
+  },
+  prepareInvocation(): vscode.PreparedToolInvocation {
+    return { invocationMessage: "Running rein..." };
+  },
+};
+
+function toolResult(text: string): vscode.LanguageModelToolResult {
+  return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(text)]);
 }
 
 // --- shared helpers ---
